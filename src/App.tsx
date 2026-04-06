@@ -1,6 +1,6 @@
 // frontend/src/App.tsx
 import { useState, useEffect } from 'react';
-import { Shield, AlertCircle, RefreshCw, Zap, Globe, Search, Settings, Moon, Sun, Film, Mic, Github, Linkedin, Mail, User, ExternalLink, Phone, Image as ImageIcon } from 'lucide-react';
+import { Shield, AlertCircle, RefreshCw, Zap, Globe, Search, Settings, Moon, Sun, Film, Mic, Github, Linkedin, Mail, User, ExternalLink, Phone, Image as ImageIcon, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import axios from 'axios';
 import ResultCard from './components/ResultCard';
@@ -12,6 +12,7 @@ import ImageAnalyzer from './components/ImageAnalyzer';
 import WelcomeGuide from './components/WelcomeGuide';
 import TrendingFakeNews from './components/TrendingFakeNews';
 import { LLMConfig, analyzeText, analyzeMedia } from './services/llmService';
+import profilePic from './assets/profile.jpg';
 
 const API_URL = '/api';
 
@@ -26,14 +27,7 @@ export default function App() {
   const [history, setHistory] = useState<any[]>([]);
   const [serverStatus, setServerStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isWelcomeOpen, setIsWelcomeOpen] = useState(() => {
-    const saved = localStorage.getItem('llmConfig');
-    if (saved) {
-      const config = JSON.parse(saved);
-      return !config.geminiKey && !import.meta.env.VITE_GEMINI_API_KEY;
-    }
-    return !import.meta.env.VITE_GEMINI_API_KEY;
-  });
+  const [isWelcomeOpen, setIsWelcomeOpen] = useState(true);
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('theme');
@@ -257,6 +251,14 @@ export default function App() {
         <header className="w-full max-w-4xl flex flex-col items-center mb-8 text-center pt-12 relative">
           <div className="absolute top-0 right-0 flex gap-2 z-20">
             <button 
+              onClick={() => setIsWelcomeOpen(true)}
+              className="p-3 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 rounded-xl border border-indigo-200 dark:border-indigo-500/30 text-indigo-600 dark:text-indigo-400 transition-colors shadow-sm flex items-center gap-2 font-medium"
+              title="How to Use Guide"
+            >
+              <Info size={20} />
+              <span className="hidden sm:inline">How to Use</span>
+            </button>
+            <button 
               onClick={() => setIsDark(!isDark)}
               className="p-3 bg-white/80 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl border border-slate-200 dark:border-slate-700/50 text-slate-600 dark:text-slate-300 transition-colors shadow-sm"
               title="Toggle Theme"
@@ -456,7 +458,7 @@ export default function App() {
               <div className="w-28 h-28 shrink-0 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-1 shadow-lg shadow-indigo-500/30 group-hover:shadow-indigo-500/50 transition-shadow duration-500">
                 <div className="w-full h-full bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center overflow-hidden">
                   <img 
-                    src="/profile.jpg" 
+                    src={profilePic} 
                     alt="Rahool Gir" 
                     className="w-full h-full object-cover"
                     onError={(e) => {

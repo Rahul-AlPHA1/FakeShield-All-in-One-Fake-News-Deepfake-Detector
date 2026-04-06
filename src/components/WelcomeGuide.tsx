@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Key, Settings, ShieldCheck, X, ChevronRight, ExternalLink } from 'lucide-react';
+import { Key, Settings, ShieldCheck, X, ChevronRight, ExternalLink, Info } from 'lucide-react';
 
 interface WelcomeGuideProps {
   isOpen: boolean;
@@ -54,12 +54,48 @@ export default function WelcomeGuide({ isOpen, onClose, onOpenSettings }: Welcom
                   animate={{ opacity: 1, x: 0 }}
                   className="space-y-6"
                 >
+                  <div className="w-16 h-16 bg-blue-100 dark:bg-blue-500/20 rounded-2xl flex items-center justify-center mb-4">
+                    <Info className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-800 dark:text-white">Step 1: How FakeShield Works</h3>
+                  <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
+                    FakeShield is an advanced AI platform designed to detect misinformation and synthetic media. It uses powerful multimodal AI to analyze content across different formats.
+                  </p>
+                  <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <ul className="space-y-3 text-slate-700 dark:text-slate-300 font-medium">
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-1">📰</span>
+                        <span><strong>Text & URL:</strong> Scrapes websites and analyzes text for clickbait and AI generation.</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-1">🖼️</span>
+                        <span><strong>Images:</strong> Detects digital manipulation and AI artifacts.</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-1">🎥</span>
+                        <span><strong>Videos:</strong> Analyzes frames for deepfake inconsistencies.</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-blue-500 mt-1">🎤</span>
+                        <span><strong>Voice:</strong> Spots synthetic TTS and AI voice clones.</span>
+                      </li>
+                    </ul>
+                  </div>
+                </motion.div>
+              )}
+
+              {step === 2 && (
+                <motion.div 
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="space-y-6"
+                >
                   <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-500/20 rounded-2xl flex items-center justify-center mb-4">
                     <Key className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
                   </div>
-                  <h3 className="text-xl font-bold text-slate-800 dark:text-white">Step 1: Get Your Free API Key</h3>
+                  <h3 className="text-xl font-bold text-slate-800 dark:text-white">Step 2: Get Your Free API Key</h3>
                   <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-                    FakeShield uses Google's powerful Gemini AI to analyze text, images, videos, and audio. To use the app flawlessly, you need a free API key from Google AI Studio.
+                    To power these advanced AI features, FakeShield uses Google's Gemini AI. You need a free API key to make the app work flawlessly.
                   </p>
                   <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
                     <ol className="list-decimal list-inside space-y-3 text-slate-700 dark:text-slate-300 font-medium">
@@ -72,7 +108,7 @@ export default function WelcomeGuide({ isOpen, onClose, onOpenSettings }: Welcom
                 </motion.div>
               )}
 
-              {step === 2 && (
+              {step === 3 && (
                 <motion.div 
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -81,7 +117,7 @@ export default function WelcomeGuide({ isOpen, onClose, onOpenSettings }: Welcom
                   <div className="w-16 h-16 bg-purple-100 dark:bg-purple-500/20 rounded-2xl flex items-center justify-center mb-4">
                     <Settings className="w-8 h-8 text-purple-600 dark:text-purple-400" />
                   </div>
-                  <h3 className="text-xl font-bold text-slate-800 dark:text-white">Step 2: Configure Settings</h3>
+                  <h3 className="text-xl font-bold text-slate-800 dark:text-white">Step 3: Configure Settings</h3>
                   <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
                     Now that you have your API key, you need to add it to the app's settings.
                   </p>
@@ -96,7 +132,7 @@ export default function WelcomeGuide({ isOpen, onClose, onOpenSettings }: Welcom
                 </motion.div>
               )}
 
-              {step === 3 && (
+              {step === 4 && (
                 <motion.div 
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -105,18 +141,18 @@ export default function WelcomeGuide({ isOpen, onClose, onOpenSettings }: Welcom
                   <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-500/20 rounded-2xl flex items-center justify-center mb-4">
                     <ShieldCheck className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
                   </div>
-                  <h3 className="text-xl font-bold text-slate-800 dark:text-white">Step 3: You're Ready!</h3>
+                  <h3 className="text-xl font-bold text-slate-800 dark:text-white">Step 4: You're Ready!</h3>
                   <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-                    The app is now fully configured and will work flawlessly! Here are some tips:
+                    The app is now fully configured! Here are some important privacy features:
                   </p>
                   <ul className="space-y-3 text-slate-700 dark:text-slate-300 font-medium">
                     <li className="flex items-start gap-2">
                       <span className="text-emerald-500 mt-1">✔</span>
-                      <span><strong>Privacy First:</strong> If you refresh the page or remain inactive for 30 minutes, all your analysis data will be securely cleared.</span>
+                      <span><strong>Auto-Clear on Refresh:</strong> Whenever you refresh the page, all your analysis data and history will be completely wiped.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-emerald-500 mt-1">✔</span>
-                      <span><strong>Multimodal:</strong> You can analyze Text, URLs, Images, Videos, and Voice notes.</span>
+                      <span><strong>30-Minute Timeout:</strong> If you are inactive for 30 minutes, the app will automatically clear your recent analysis to protect your privacy.</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-emerald-500 mt-1">✔</span>
@@ -129,7 +165,7 @@ export default function WelcomeGuide({ isOpen, onClose, onOpenSettings }: Welcom
 
             <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex justify-between items-center">
               <div className="flex gap-2">
-                {[1, 2, 3].map((i) => (
+                {[1, 2, 3, 4].map((i) => (
                   <div 
                     key={i} 
                     className={`h-2 rounded-full transition-all duration-300 ${step === i ? 'w-8 bg-indigo-600' : 'w-2 bg-slate-300 dark:bg-slate-700'}`}
@@ -147,7 +183,7 @@ export default function WelcomeGuide({ isOpen, onClose, onOpenSettings }: Welcom
                   </button>
                 )}
                 
-                {step < 3 ? (
+                {step < 4 ? (
                   <button 
                     onClick={() => setStep(step + 1)}
                     className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-indigo-500/25"
