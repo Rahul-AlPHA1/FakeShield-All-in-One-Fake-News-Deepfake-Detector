@@ -200,9 +200,9 @@ export const fileToBase64 = (file: File): Promise<string> => {
   });
 };
 
-export async function analyzeMedia(file: File, mediaType: 'video' | 'audio', config: LLMConfig) {
+export async function analyzeMedia(file: File, mediaType: 'video' | 'audio' | 'image', config: LLMConfig) {
   if (config.provider !== 'gemini') {
-    throw new Error(`${mediaType === 'video' ? 'Video' : 'Audio'} analysis is currently only supported with Google Gemini. Please switch your provider in Settings.`);
+    throw new Error(`${mediaType === 'video' ? 'Video' : mediaType === 'audio' ? 'Audio' : 'Image'} analysis is currently only supported with Google Gemini. Please switch your provider in Settings.`);
   }
 
   const base64Data = await fileToBase64(file);
@@ -213,8 +213,9 @@ export async function analyzeMedia(file: File, mediaType: 'video' | 'audio', con
 
   const ai = new GoogleGenAI({ apiKey });
 
-  const prompt = mediaType === 'video'
-    ? `Analyze this video for signs of being a deepfake or AI-generated. Look for unnatural blink patterns, facial inconsistencies, color bleeding, unnatural noise patterns, and lighting inconsistencies.
+  let prompt = '';
+  if (mediaType === 'video') {
+    prompt = `Analyze this video for signs of being a deepfake or AI-generated. Look for unnatural blink patterns, facial inconsistencies, color bleeding, unnatural noise patterns, and lighting inconsistencies.
        Return ONLY a JSON object with the following structure:
        {
          "label": "DEEPFAKE" or "AUTHENTIC",
@@ -228,8 +229,9 @@ export async function analyzeMedia(file: File, mediaType: 'video' | 'audio', con
            "lighting_consistency": "<observations about shadows and lighting>"
          },
          "top_keywords": ["deepfake", "manipulation", "authentic", "ai-generated"]
-       }`
-    : `Analyze this audio for signs of being an AI voice clone or synthetic TTS. Look for unnatural prosody, lack of breathing artifacts, robotic spectral flatness, and uniform frequency bands.
+       }`;
+  } else if (mediaType === 'audio') {
+    prompt = `Analyze this audio for signs of being an AI voice clone or synthetic TTS. Look for unnatural prosody, lack of breathing artifacts, robotic spectral flatness, and uniform frequency bands.
        Return ONLY a JSON object with the following structure:
        {
          "label": "AI GENERATED" or "HUMAN VOICE",
@@ -244,6 +246,23 @@ export async function analyzeMedia(file: File, mediaType: 'video' | 'audio', con
          },
          "top_keywords": ["synthetic", "clone", "natural", "tts"]
        }`;
+  } else if (mediaType === 'image') {
+    prompt = `Analyze this image for signs of being AI-generated or digitally manipulated (deepfake/photoshopped). Look for unnatural artifacts, anatomical impossibilities (e.g., extra fingers, weird teeth), nonsensical background text, lighting/shadow inconsistencies, and asymmetrical features.
+       Return ONLY a JSON object with the following structure:
+       {
+         "label": "AI GENERATED" or "AUTHENTIC",
+         "confidence": <float between 0 and 1>,
+         "reasoning": "<detailed explanation of your findings>",
+         "breakdown": {
+           "anatomical_consistency": "<observations about body parts/faces>",
+           "background_details": "<observations about background logic>",
+           "lighting_and_shadows": "<observations about lighting consistency>",
+           "text_and_patterns": "<observations about text or repeating patterns>",
+           "artifacts_and_noise": "<observations about digital artifacts>"
+         },
+         "top_keywords": ["ai-generated", "manipulated", "authentic", "artifacts"]
+       }`;
+  }
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',

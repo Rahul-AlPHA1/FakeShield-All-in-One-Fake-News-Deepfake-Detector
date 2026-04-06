@@ -1,6 +1,6 @@
 // frontend/src/App.tsx
 import { useState, useEffect } from 'react';
-import { Shield, AlertCircle, RefreshCw, Zap, Globe, Search, Settings, Moon, Sun, Film, Mic, Github, Linkedin, Mail, User, ExternalLink, Phone } from 'lucide-react';
+import { Shield, AlertCircle, RefreshCw, Zap, Globe, Search, Settings, Moon, Sun, Film, Mic, Github, Linkedin, Mail, User, ExternalLink, Phone, Image as ImageIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import axios from 'axios';
 import ResultCard from './components/ResultCard';
@@ -8,12 +8,13 @@ import HistoryPanel from './components/HistoryPanel';
 import SettingsModal from './components/SettingsModal';
 import VideoAnalyzer from './components/VideoAnalyzer';
 import VoiceAnalyzer from './components/VoiceAnalyzer';
+import ImageAnalyzer from './components/ImageAnalyzer';
 import { LLMConfig, analyzeText, analyzeMedia } from './services/llmService';
 
-const API_URL = '';
+const API_URL = '/api';
 
 export default function App() {
-  const [mainTab, setMainTab] = useState<'text' | 'video' | 'voice'>('text');
+  const [mainTab, setMainTab] = useState<'text' | 'video' | 'voice' | 'image'>('text');
   const [mode, setMode] = useState<'text' | 'url'>('text');
   const [text, setText] = useState('');
   const [url, setUrl] = useState('');
@@ -149,7 +150,7 @@ export default function App() {
     }
   };
 
-  const handleAnalyzeMedia = async (file: File, type: 'video' | 'audio') => {
+  const handleAnalyzeMedia = async (file: File, type: 'video' | 'audio' | 'image') => {
     setLoading(true);
     setError(null);
     setResult(null);
@@ -189,6 +190,8 @@ export default function App() {
       setMainTab('video');
     } else if (item.type === 'audio') {
       setMainTab('voice');
+    } else if (item.type === 'image') {
+      setMainTab('image');
     } else if (item.type === 'url') {
       setMainTab('text');
       setMode('url');
@@ -269,6 +272,7 @@ export default function App() {
         <div className="flex justify-center gap-2 sm:gap-4 mb-8 w-full max-w-3xl relative p-2 bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 shadow-inner">
           {[
             { id: 'text', icon: Search, label: 'Text & URL', color: 'bg-indigo-600', shadow: 'shadow-indigo-500/40' },
+            { id: 'image', icon: ImageIcon, label: 'Image', color: 'bg-emerald-600', shadow: 'shadow-emerald-500/40' },
             { id: 'video', icon: Film, label: 'Video', color: 'bg-purple-600', shadow: 'shadow-purple-500/40' },
             { id: 'voice', icon: Mic, label: 'Voice', color: 'bg-pink-600', shadow: 'shadow-pink-500/40' }
           ].map((tab) => (
@@ -382,6 +386,10 @@ export default function App() {
             </>
           )}
 
+          {mainTab === 'image' && (
+            <ImageAnalyzer onAnalyze={(file) => handleAnalyzeMedia(file, 'image')} loading={loading} />
+          )}
+
           {mainTab === 'video' && (
             <VideoAnalyzer onAnalyze={(file) => handleAnalyzeMedia(file, 'video')} loading={loading} />
           )}
@@ -465,6 +473,20 @@ export default function App() {
             </div>
           </div>
         </div>
+
+        {/* Footer */}
+        <footer className="w-full max-w-4xl mt-auto pt-8 pb-12 flex flex-col items-center justify-center text-center z-10 border-t border-slate-200/50 dark:border-slate-800/50">
+          <div className="flex flex-wrap justify-center gap-2 mb-6">
+            {['React 19', 'Tailwind CSS', 'Framer Motion', 'Node.js', 'Express', 'Vercel Serverless', 'Google Gemini AI', 'Cheerio'].map((tech) => (
+              <span key={tech} className="px-3 py-1 text-xs font-medium bg-white/50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 rounded-full border border-slate-200 dark:border-slate-700/50 shadow-sm backdrop-blur-sm">
+                {tech}
+              </span>
+            ))}
+          </div>
+          <p className="text-slate-500 dark:text-slate-500 text-sm flex items-center gap-1 font-medium">
+            &copy; {new Date().getFullYear()} Architected by <span className="font-bold text-indigo-600 dark:text-indigo-400">Rahool Gir</span>. All rights reserved.
+          </p>
+        </footer>
 
       </div>
 
