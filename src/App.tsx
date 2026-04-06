@@ -9,6 +9,8 @@ import SettingsModal from './components/SettingsModal';
 import VideoAnalyzer from './components/VideoAnalyzer';
 import VoiceAnalyzer from './components/VoiceAnalyzer';
 import ImageAnalyzer from './components/ImageAnalyzer';
+import WelcomeGuide from './components/WelcomeGuide';
+import TrendingFakeNews from './components/TrendingFakeNews';
 import { LLMConfig, analyzeText, analyzeMedia } from './services/llmService';
 
 const API_URL = '/api';
@@ -24,6 +26,14 @@ export default function App() {
   const [history, setHistory] = useState<any[]>([]);
   const [serverStatus, setServerStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isWelcomeOpen, setIsWelcomeOpen] = useState(() => {
+    const saved = localStorage.getItem('llmConfig');
+    if (saved) {
+      const config = JSON.parse(saved);
+      return !config.geminiKey && !import.meta.env.VITE_GEMINI_API_KEY;
+    }
+    return !import.meta.env.VITE_GEMINI_API_KEY;
+  });
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('theme');
@@ -38,6 +48,33 @@ export default function App() {
   });
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
+  // Inactivity timer logic (30 mins)
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
+    const resetTimer = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        // Clear all data after 30 mins of inactivity
+        setHistory([]);
+        setResult(null);
+        setText('');
+        setUrl('');
+      }, 30 * 60 * 1000); // 30 minutes
+    };
+
+    // Listen for user activity
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+    events.forEach(event => document.addEventListener(event, resetTimer));
+
+    resetTimer(); // Initialize timer
+
+    return () => {
+      clearTimeout(timeoutId);
+      events.forEach(event => document.removeEventListener(event, resetTimer));
+    };
+  }, []);
+
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setMousePos({ x: e.clientX, y: e.clientY });
@@ -47,14 +84,6 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const savedHistory = localStorage.getItem('fakeNewsHistory');
-    if (savedHistory) {
-      try {
-        setHistory(JSON.parse(savedHistory));
-      } catch (e) {
-        console.error('Failed to parse history', e);
-      }
-    }
     checkServerHealth();
   }, []);
 
@@ -89,7 +118,6 @@ export default function App() {
     
     const updatedHistory = [historyItem, ...history].slice(0, 10);
     setHistory(updatedHistory);
-    localStorage.setItem('fakeNewsHistory', JSON.stringify(updatedHistory));
   };
 
   const handleSaveSettings = (newConfig: LLMConfig) => {
@@ -518,9 +546,20 @@ export default function App() {
       </div>
 
       {/* Sidebar */}
-      <div className="w-full md:w-96 bg-white/90 dark:bg-slate-900/80 backdrop-blur-xl border-l border-slate-200 dark:border-slate-800 flex flex-col h-auto md:h-screen sticky top-0 z-20 shadow-2xl">
-        <HistoryPanel history={history} onLoadHistory={handleLoadHistory} />
+      <div className="w-full md:w-96 bg-white/90 dark:bg-slate-900/80 backdrop-blur-xl border-l border-slate-200 dark:border-slate-800 flex flex-col h-auto md:h-screen sticky top-0 z-20 shadow-2xl overflow-hidden">
+        <div className="flex-shrink-0">
+          <HistoryPanel history={history} onLoadHistory={handleLoadHistory} />
+        </div>
+        <div className="flex-1 overflow-hidden flex flex-col">
+          <TrendingFakeNews />
+        </div>
       </div>
+
+      <WelcomeGuide 
+        isOpen={isWelcomeOpen} 
+        onClose={() => setIsWelcomeOpen(false)} 
+        onOpenSettings={() => setIsSettingsOpen(true)}
+      />
 
       <SettingsModal 
         isOpen={isSettingsOpen}

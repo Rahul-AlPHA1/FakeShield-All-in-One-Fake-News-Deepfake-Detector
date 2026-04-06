@@ -18,7 +18,7 @@ interface HistoryPanelProps {
 export default function HistoryPanel({ history, onLoadHistory }: HistoryPanelProps) {
   if (history.length === 0) {
     return (
-      <div className="p-6 h-full flex flex-col">
+      <div className="p-6 flex flex-col min-h-[200px]">
         <div className="flex items-center gap-2 mb-6 text-slate-700 dark:text-slate-300">
           <Clock size={20} />
           <h2 className="font-semibold text-lg">Recent Analysis</h2>
@@ -33,7 +33,7 @@ export default function HistoryPanel({ history, onLoadHistory }: HistoryPanelPro
   }
 
   return (
-    <div className="p-6 h-full flex flex-col">
+    <div className="p-6 flex flex-col max-h-[50vh]">
       <div className="flex items-center gap-2 mb-6 text-slate-700 dark:text-slate-300">
         <Clock size={20} />
         <h2 className="font-semibold text-lg">Recent Analysis</h2>
