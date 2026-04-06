@@ -246,7 +246,7 @@ export async function analyzeMedia(file: File, mediaType: 'video' | 'audio', con
        }`;
 
   const response = await ai.models.generateContent({
-    model: 'gemini-3.1-flash-preview',
+    model: 'gemini-3-flash-preview',
     contents: [
       {
         parts: [
