@@ -10,7 +10,7 @@ import VideoAnalyzer from './components/VideoAnalyzer';
 import VoiceAnalyzer from './components/VoiceAnalyzer';
 import { LLMConfig, analyzeText, analyzeMedia } from './services/llmService';
 
-const API_URL = '/api';
+const API_URL = '';
 
 export default function App() {
   const [mainTab, setMainTab] = useState<'text' | 'video' | 'voice'>('text');
