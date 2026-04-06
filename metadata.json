@@ -1,0 +1,5 @@
+{
+  "name": "Fake News Detector (Hybrid Edition)",
+  "description": "An advanced misinformation detection system that combines traditional Deep Learning with modern Large Language Models (Gemini API) to verify global news in real-time.",
+  "requestFramePermissions": []
+}
