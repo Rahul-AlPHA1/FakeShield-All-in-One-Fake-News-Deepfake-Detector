@@ -476,6 +476,33 @@ export default function App() {
 
         {/* Footer */}
         <footer className="w-full max-w-4xl mt-auto pt-8 pb-12 flex flex-col items-center justify-center text-center z-10 border-t border-slate-200/50 dark:border-slate-800/50">
+          
+          {/* Monetization & Analytics */}
+          <div className="flex flex-col sm:flex-row items-center gap-6 mb-8">
+            <a 
+              href="https://www.buymeacoffee.com/rg9859943c" 
+              target="_blank" 
+              rel="noreferrer"
+              className="hover:scale-105 transition-transform duration-300"
+            >
+              <img 
+                src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" 
+                alt="Buy Me A Coffee" 
+                className="h-10"
+              />
+            </a>
+            
+            <div className="flex items-center gap-3 px-4 py-2 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md rounded-xl border border-slate-200 dark:border-slate-700/50 shadow-sm">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Total Visitors:</span>
+              <img 
+                src="https://api.visitorbadge.io/api/visitors?path=Rahul-AlPHA1.FakeShield&countColor=%234f46e5&labelColor=%231e293b" 
+                alt="Visitor Count" 
+                className="h-5 rounded"
+              />
+            </div>
+          </div>
+
           <div className="flex flex-wrap justify-center gap-2 mb-6">
             {['React 19', 'Tailwind CSS', 'Framer Motion', 'Node.js', 'Express', 'Vercel Serverless', 'Google Gemini AI', 'Cheerio'].map((tech) => (
               <span key={tech} className="px-3 py-1 text-xs font-medium bg-white/50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 rounded-full border border-slate-200 dark:border-slate-700/50 shadow-sm backdrop-blur-sm">
