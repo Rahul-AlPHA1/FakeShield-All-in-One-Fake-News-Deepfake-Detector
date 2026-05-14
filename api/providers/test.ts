@@ -1,4 +1,4 @@
-import { testProviderConnection } from "../../lib/providerService";
+import { testProviderConnection } from "../../lib/providerService.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {

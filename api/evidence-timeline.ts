@@ -1,4 +1,4 @@
-import { getEvidenceTimeline } from "../lib/intelligenceService";
+import { getEvidenceTimeline } from "../lib/intelligenceService.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {

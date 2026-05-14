@@ -1,4 +1,4 @@
-import { analyzeMediaWithProvider } from "../lib/providerService";
+import { analyzeMediaWithProvider } from "../lib/providerService.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {

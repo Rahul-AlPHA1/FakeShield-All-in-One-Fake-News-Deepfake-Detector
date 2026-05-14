@@ -1,4 +1,4 @@
-import "./loadEnv";
+import "./loadEnv.js";
 import { GoogleGenAI, Type } from "@google/genai";
 
 export type Provider = "auto" | "gemini" | "groq" | "ollama";
@@ -145,8 +145,26 @@ function isLimitError(error: unknown) {
   return /429|quota|rate.?limit|resource exhausted|too many requests|limit exceeded|insufficient_quota|usage limit/i.test(message);
 }
 
+function isRecoverableProviderError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error || "");
+  return (
+    isLimitError(error) ||
+    /api key is missing|api_key_invalid|invalid api key|invalid key|unauthorized|forbidden|permission denied|401|403|model.*not found|model.*not supported|not found for api version|not supported for generatecontent/i.test(message)
+  );
+}
+
 function getLimitMessage() {
   return "Today your Gemini and Groq limits are hit. Please try again tomorrow.";
+}
+
+function getProviderFailureMessage(errors: Error[]) {
+  if (errors.some(isLimitError)) return getLimitMessage();
+
+  if (errors.some(isRecoverableProviderError)) {
+    return "AI provider key or model access failed. Please verify GEMINI_API_KEY, GROQ_API_KEY, GEMINI_MODEL, and GROQ_MODEL in Vercel, then redeploy.";
+  }
+
+  return errors[errors.length - 1]?.message || "No provider is configured.";
 }
 
 function getGeminiSchema() {
@@ -381,14 +399,13 @@ export async function analyzeTextWithProvider(text: string, sourceUrl: string | 
       errors.push(error);
       const shouldFallback =
         currentProvider === "gemini" || currentProvider === "groq"
-          ? isLimitError(error) || /api key is missing/i.test(error.message || "")
+          ? isRecoverableProviderError(error)
           : false;
       if (!shouldFallback) throw error;
     }
   }
 
-  if (errors.some(isLimitError)) throw new Error(getLimitMessage());
-  throw errors[errors.length - 1] || new Error("No provider is configured.");
+  throw new Error(getProviderFailureMessage(errors));
 }
 
 async function compareWithGemini(left: string, right: string, config: LLMConfig) {
@@ -457,13 +474,12 @@ export async function compareClaimsWithProvider(left: string, right: string, con
       return await compareWithGroq(left, right, config);
     } catch (error: any) {
       errors.push(error);
-      const shouldFallback = isLimitError(error) || /api key is missing/i.test(error.message || "");
+      const shouldFallback = isRecoverableProviderError(error);
       if (!shouldFallback) throw error;
     }
   }
 
-  if (errors.some(isLimitError)) throw new Error(getLimitMessage());
-  throw errors[errors.length - 1] || new Error("No comparison provider is configured.");
+  throw new Error(getProviderFailureMessage(errors));
 }
 
 export async function analyzeMediaWithProvider(

@@ -14,9 +14,9 @@ import {
   testProviderConnection,
   type LLMConfig,
   type MediaType,
-} from "./lib/providerService";
-import { getTrendingMisinformation } from "./lib/trendingService";
-import { getEvidenceTimeline, scoreSourceTrust } from "./lib/intelligenceService";
+} from "./lib/providerService.js";
+import { getTrendingMisinformation } from "./lib/trendingService.js";
+import { getEvidenceTimeline, scoreSourceTrust } from "./lib/intelligenceService.js";
 
 const PRIVATE_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1"]);
 

@@ -1,15 +1,45 @@
 {
-  "name": "react-example",
+  "name": "fakeshield-ai-media-intelligence",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "AI-powered misinformation, deepfake, source trust, evidence timeline, and media intelligence platform.",
   "type": "module",
+  "author": {
+    "name": "Rahool Gir",
+    "email": "rahool.goswami16@gmail.com",
+    "url": "https://rahul-alpha1.github.io/RahoolPortfolio.com"
+  },
+  "homepage": "https://rahul-alpha1.github.io/RahoolPortfolio.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rahul-AlPHA1/FakeShield-All-in-One-Fake-News-Deepfake-Detector.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Rahul-AlPHA1/FakeShield-All-in-One-Fake-News-Deepfake-Detector/issues"
+  },
+  "keywords": [
+    "fakeshield",
+    "fake-news-detection",
+    "misinformation",
+    "deepfake-detection",
+    "voice-clone-detection",
+    "ai-media-intelligence",
+    "source-trust",
+    "fact-checking",
+    "gemini",
+    "groq",
+    "react",
+    "typescript",
+    "vercel"
+  ],
   "scripts": {
     "dev": "tsx server.ts",
     "start": "tsx server.ts",
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "check": "npm run lint && npm run build"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",

@@ -1,5 +1,5 @@
 {
-  "name": "Fake News Detector (Hybrid Edition)",
-  "description": "An advanced misinformation detection system that combines traditional Deep Learning with modern Large Language Models (Gemini API) to verify global news in real-time.",
+  "name": "FakeShield — AI Media Intelligence Platform",
+  "description": "An advanced AI platform for misinformation detection, deepfake review, source trust scoring, evidence timelines, claim comparison, live watchlists, and public verification reports.",
   "requestFramePermissions": []
 }

@@ -1,4 +1,4 @@
-import { getTrendingMisinformation } from "../lib/trendingService";
+import { getTrendingMisinformation } from "../lib/trendingService.js";
 
 export default async function handler(req, res) {
   if (req.method !== "GET") {

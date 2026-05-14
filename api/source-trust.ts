@@ -1,4 +1,4 @@
-import { scoreSourceTrust } from "../lib/intelligenceService";
+import { scoreSourceTrust } from "../lib/intelligenceService.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
