@@ -5,17 +5,124 @@ import cors from "cors";
 import fs from "fs";
 import * as cheerio from "cheerio";
 import axios from "axios";
+import "./lib/loadEnv";
+import {
+  analyzeMediaWithProvider,
+  compareClaimsWithProvider,
+  analyzeTextWithProvider,
+  getProviderSummary,
+  testProviderConnection,
+  type LLMConfig,
+  type MediaType,
+} from "./lib/providerService";
+import { getTrendingMisinformation } from "./lib/trendingService";
+import { getEvidenceTimeline, scoreSourceTrust } from "./lib/intelligenceService";
+
+const PRIVATE_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1"]);
+
+function validatePublicHttpUrl(rawUrl: string) {
+  const parsed = new URL(rawUrl);
+  if (!["http:", "https:"].includes(parsed.protocol)) {
+    throw new Error("Only http and https URLs are supported.");
+  }
+  if (PRIVATE_HOSTS.has(parsed.hostname)) {
+    throw new Error("Local or private URLs are not allowed.");
+  }
+  return parsed.toString();
+}
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT || 3000);
 
   app.use(cors());
-  app.use(express.json());
+  app.use(express.json({ limit: "25mb" }));
 
   // API Routes
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok", model_loaded: true });
+  });
+
+  app.get("/api/providers", (req, res) => {
+    res.json({ providers: getProviderSummary() });
+  });
+
+  app.get("/api/trending", async (req, res) => {
+    const result = await getTrendingMisinformation();
+    res.json(result);
+  });
+
+  app.post("/api/source-trust", (req, res) => {
+    const { sourceUrl } = req.body || {};
+    res.json(scoreSourceTrust(sourceUrl || null));
+  });
+
+  app.post("/api/evidence-timeline", async (req, res) => {
+    const { query, sourceUrl } = req.body || {};
+    const result = await getEvidenceTimeline(String(query || ""), sourceUrl || null);
+    res.json(result);
+  });
+
+  app.post("/api/compare-claims", async (req, res) => {
+    const { left, right, config } = req.body || {};
+    if (!left || !right || String(left).trim().length < 10 || String(right).trim().length < 10) {
+      return res.status(400).json({ error: "Both claims need at least 10 characters." });
+    }
+
+    try {
+      const result = await compareClaimsWithProvider(String(left), String(right), config || { provider: "auto" });
+      res.json(result);
+    } catch (err: any) {
+      console.error("Claim Comparison Error:", err.message);
+      res.status(500).json({ error: err.message || "Claim comparison failed." });
+    }
+  });
+
+  app.post("/api/providers/test", async (req, res) => {
+    try {
+      const config = (req.body?.config || { provider: req.body?.provider || "gemini" }) as LLMConfig;
+      const result = await testProviderConnection(config);
+      res.json(result);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message || "Provider test failed." });
+    }
+  });
+
+  app.post("/api/analyze-text", async (req, res) => {
+    const { text, sourceUrl, config } = req.body || {};
+
+    if (!text || typeof text !== "string" || text.trim().length < 10) {
+      return res.status(400).json({ error: "Please enter more text (at least 10 characters)." });
+    }
+
+    try {
+      const result = await analyzeTextWithProvider(text, sourceUrl || null, config || { provider: "auto" });
+      res.json(result);
+    } catch (err: any) {
+      console.error("Text Analysis Error:", err.message);
+      res.status(500).json({ error: err.message || "Text analysis failed." });
+    }
+  });
+
+  app.post("/api/analyze-media", async (req, res) => {
+    const { base64Data, mimeType, mediaType, config } = req.body || {};
+
+    if (!base64Data || !mimeType || !["video", "audio", "image"].includes(mediaType)) {
+      return res.status(400).json({ error: "Missing media payload." });
+    }
+
+    try {
+      const result = await analyzeMediaWithProvider(
+        base64Data,
+        mimeType,
+        mediaType as MediaType,
+        config || { provider: "auto" },
+      );
+      res.json(result);
+    } catch (err: any) {
+      console.error("Media Analysis Error:", err.message);
+      res.status(500).json({ error: err.message || "Media analysis failed." });
+    }
   });
 
   app.post("/api/scrape", async (req, res) => {
@@ -26,11 +133,10 @@ async function startServer() {
     }
 
     try {
-      // Basic URL validation
-      new URL(url);
+      const safeUrl = validatePublicHttpUrl(url);
       
       // Fetch URL content
-      const response = await axios.get(url, {
+      const response = await axios.get(safeUrl, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -95,7 +201,12 @@ async function startServer() {
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+        hmr: process.env.DISABLE_HMR === "true"
+          ? false
+          : { port: Number(process.env.HMR_PORT || 24679) },
+      },
       appType: "spa",
     });
     app.use(vite.middlewares);

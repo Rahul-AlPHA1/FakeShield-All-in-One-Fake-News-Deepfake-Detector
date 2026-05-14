@@ -1,6 +1,19 @@
 import * as cheerio from "cheerio";
 import axios from "axios";
 
+const PRIVATE_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1"]);
+
+function validatePublicHttpUrl(rawUrl) {
+  const parsed = new URL(rawUrl);
+  if (!["http:", "https:"].includes(parsed.protocol)) {
+    throw new Error("Only http and https URLs are supported.");
+  }
+  if (PRIVATE_HOSTS.has(parsed.hostname)) {
+    throw new Error("Local or private URLs are not allowed.");
+  }
+  return parsed.toString();
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -13,9 +26,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    new URL(url);
+    const safeUrl = validatePublicHttpUrl(url);
     
-    const response = await axios.get(url, {
+    const response = await axios.get(safeUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',

@@ -13,11 +13,20 @@ interface ResultCardProps {
       tone: string;
       logical_fallacies: string[];
       fact_check_summary: string;
+      source_reliability?: string;
     };
+    claims?: Array<{
+      claim: string;
+      verdict: 'SUPPORTED' | 'QUESTIONABLE' | 'UNSUPPORTED' | string;
+      evidence_note: string;
+    }>;
+    recommended_actions?: string[];
     top_keywords: string[];
     word_count: number;
     processing_time_ms: number;
     source_url?: string;
+    provider_used?: string;
+    model_used?: string;
   };
   originalText: string;
   apiUrl: string;
@@ -54,6 +63,14 @@ export default function ResultCard({ result, originalText, apiUrl }: ResultCardP
   };
 
   const theme = getThemeColors();
+  const sourceIsUrl = /^https?:\/\//i.test(result.source_url || '');
+
+  const getClaimBadgeClass = (verdict: string) => {
+    const normalized = verdict.toUpperCase();
+    if (normalized === 'SUPPORTED') return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/20';
+    if (normalized === 'UNSUPPORTED') return 'bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300 border-rose-200 dark:border-rose-500/20';
+    return 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300 border-amber-200 dark:border-amber-500/20';
+  };
 
   const handleFeedback = async (isCorrect: boolean) => {
     if (feedbackSent) return;
@@ -84,7 +101,7 @@ export default function ResultCard({ result, originalText, apiUrl }: ResultCardP
       initial={{ opacity: 0, y: 20, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.5, type: "spring", bounce: 0.4 }}
-      className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-3xl shadow-xl dark:shadow-2xl border border-slate-200 dark:border-slate-700/50 overflow-hidden relative"
+      className="bg-white/85 dark:bg-slate-800/90 backdrop-blur-xl rounded-3xl shadow-xl dark:shadow-2xl border border-slate-200 dark:border-slate-600/70 overflow-hidden relative"
     >
       {/* Glowing background effect */}
       <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-full h-32 ${theme.bg} blur-3xl -z-10 opacity-50`} />
@@ -101,7 +118,7 @@ export default function ResultCard({ result, originalText, apiUrl }: ResultCardP
             <h2 className="text-4xl font-black tracking-tight">
               <span className={theme.text}>{result.label}</span>
             </h2>
-            <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mt-1 flex items-center gap-1.5">
+            <p className="text-slate-500 dark:text-slate-300 text-sm font-medium mt-1 flex items-center gap-1.5">
               <BrainCircuit size={14} /> AI Fact-Check Complete
             </p>
           </div>
@@ -134,12 +151,12 @@ export default function ResultCard({ result, originalText, apiUrl }: ResultCardP
 
       <div className="p-8 space-y-8">
         {/* Reasoning Section */}
-        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-6 border border-slate-200 dark:border-slate-700/50">
+        <div className="bg-slate-50 dark:bg-slate-900/80 rounded-2xl p-6 border border-slate-200 dark:border-slate-600/70">
           <h3 className="text-sm font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider mb-3 flex items-center gap-2">
             <ShieldAlert size={16} className="text-indigo-500 dark:text-indigo-400" />
             AI Reasoning
           </h3>
-          <p className="text-slate-700 dark:text-slate-200 leading-relaxed text-lg">
+          <p className="text-slate-700 dark:text-slate-100 leading-relaxed text-lg">
             {result.reasoning}
           </p>
         </div>
@@ -152,13 +169,46 @@ export default function ResultCard({ result, originalText, apiUrl }: ResultCardP
             const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
             
             return (
-              <div key={key} className="bg-slate-100/50 dark:bg-slate-800/50 rounded-2xl p-5 border border-slate-200 dark:border-slate-700/30">
-                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">{formattedKey}</span>
-                <span className="text-slate-700 dark:text-slate-200 text-sm leading-relaxed">{String(value)}</span>
+              <div key={key} className="bg-slate-100/60 dark:bg-slate-900/60 rounded-2xl p-5 border border-slate-200 dark:border-slate-600/60">
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider block mb-2">{formattedKey}</span>
+                <span className="text-slate-700 dark:text-slate-100 text-sm leading-relaxed">{String(value)}</span>
               </div>
             );
           })}
         </div>
+
+        {result.claims && result.claims.length > 0 && (
+          <div>
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-3">Claim-Level Findings</span>
+            <div className="space-y-3">
+              {result.claims.map((claim, idx) => (
+                <div key={`${claim.claim}-${idx}`} className="rounded-2xl border border-slate-200 dark:border-slate-600/70 bg-slate-50 dark:bg-slate-900/70 p-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
+                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 leading-relaxed">{claim.claim}</p>
+                    <span className={`shrink-0 w-fit rounded-lg border px-2.5 py-1 text-[10px] font-bold tracking-wider ${getClaimBadgeClass(claim.verdict)}`}>
+                      {claim.verdict}
+                    </span>
+                  </div>
+                  <p className="text-sm text-slate-600 dark:text-slate-200 leading-relaxed">{claim.evidence_note}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {result.recommended_actions && result.recommended_actions.length > 0 && (
+          <div className="bg-indigo-50 dark:bg-indigo-500/10 rounded-2xl p-5 border border-indigo-100 dark:border-indigo-500/20">
+            <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300 uppercase tracking-wider block mb-3">Recommended Next Steps</span>
+            <ul className="space-y-2">
+              {result.recommended_actions.map((action, idx) => (
+                <li key={`${action}-${idx}`} className="text-sm text-indigo-900 dark:text-indigo-100 flex gap-2 leading-relaxed">
+                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-indigo-500 shrink-0" />
+                  <span>{action}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Source URL (if applicable) */}
         {result.source_url && (
@@ -166,9 +216,13 @@ export default function ResultCard({ result, originalText, apiUrl }: ResultCardP
             <Globe className="text-indigo-500 dark:text-indigo-400 shrink-0" size={20} />
             <div className="overflow-hidden">
               <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">Source Scanned</span>
-              <a href={result.source_url} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-300 hover:text-indigo-500 dark:hover:text-indigo-200 text-sm truncate block hover:underline">
-                {result.source_url}
-              </a>
+              {sourceIsUrl ? (
+                <a href={result.source_url} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-300 hover:text-indigo-500 dark:hover:text-indigo-200 text-sm truncate block hover:underline">
+                  {result.source_url}
+                </a>
+              ) : (
+                <span className="text-slate-600 dark:text-slate-300 text-sm truncate block">{result.source_url}</span>
+              )}
             </div>
           </div>
         )}
@@ -177,7 +231,7 @@ export default function ResultCard({ result, originalText, apiUrl }: ResultCardP
         <div className="space-y-6">
           {result.breakdown?.logical_fallacies && result.breakdown.logical_fallacies.length > 0 && (
             <div>
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-3">Logical Fallacies Detected</span>
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider block mb-3">Logical Fallacies Detected</span>
               <div className="flex flex-wrap gap-2">
                 {result.breakdown.logical_fallacies.map((fallacy, idx) => (
                   <span key={idx} className="px-3 py-1.5 bg-rose-100 dark:bg-rose-500/10 text-rose-700 dark:text-rose-300 rounded-lg text-sm border border-rose-200 dark:border-rose-500/20 font-medium">
@@ -190,7 +244,7 @@ export default function ResultCard({ result, originalText, apiUrl }: ResultCardP
 
           {result.top_keywords && result.top_keywords.length > 0 && (
             <div>
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-3">Key Entities</span>
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wider block mb-3">Key Entities</span>
               <div className="flex flex-wrap gap-2">
                 {result.top_keywords.map((word, idx) => (
                   <span key={idx} className="px-3 py-1.5 bg-slate-100 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 rounded-lg text-sm border border-slate-200 dark:border-slate-600/50">
@@ -205,6 +259,12 @@ export default function ResultCard({ result, originalText, apiUrl }: ResultCardP
         {/* Footer Stats & Actions */}
         <div className="pt-6 border-t border-slate-200 dark:border-slate-700/50 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex gap-6">
+            {result.provider_used && (
+              <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm font-medium">
+                <BrainCircuit size={16} />
+                <span>{result.provider_used}{result.model_used ? ` · ${result.model_used}` : ''}</span>
+              </div>
+            )}
             {result.word_count > 0 && (
               <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm font-medium">
                 <FileText size={16} />

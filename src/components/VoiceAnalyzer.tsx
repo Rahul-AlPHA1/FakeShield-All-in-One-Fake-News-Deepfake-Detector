@@ -10,10 +10,10 @@ export default function VoiceAnalyzer({ onAnalyze, loading }: VoiceAnalyzerProps
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0];
+  const validateAndSetFile = (selected: File) => {
     if (!selected) return;
 
     if (!selected.type.startsWith('audio/') && !selected.type.startsWith('video/')) {
@@ -26,8 +26,28 @@ export default function VoiceAnalyzer({ onAnalyze, loading }: VoiceAnalyzerProps
     }
 
     setError(null);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
     setFile(selected);
     setPreviewUrl(URL.createObjectURL(selected));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files?.[0];
+    if (selected) validateAndSetFile(selected);
+  };
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(e.type === 'dragenter' || e.type === 'dragover');
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    const dropped = e.dataTransfer.files?.[0];
+    if (dropped) validateAndSetFile(dropped);
   };
 
   const handleClear = () => {
@@ -43,8 +63,16 @@ export default function VoiceAnalyzer({ onAnalyze, loading }: VoiceAnalyzerProps
       <div className="p-6 md:p-8 relative">
         {!file ? (
           <div 
-            className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-10 flex flex-col items-center justify-center text-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
+            className={`border-2 border-dashed rounded-2xl p-10 flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
+              dragActive
+                ? 'border-pink-500 bg-pink-50 dark:bg-pink-500/10 scale-[1.02]'
+                : 'border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+            }`}
             onClick={() => fileInputRef.current?.click()}
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
           >
             <div className="p-4 bg-pink-100 dark:bg-pink-500/10 rounded-full mb-4">
               <Mic className="w-10 h-10 text-pink-600 dark:text-pink-400" />

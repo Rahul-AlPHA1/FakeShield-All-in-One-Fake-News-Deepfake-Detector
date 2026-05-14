@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, type DragEvent, type ChangeEvent } from 'react';
 import { Upload, Image as ImageIcon, X, AlertCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -14,7 +14,7 @@ export default function ImageAnalyzer({ onAnalyze, loading }: ImageAnalyzerProps
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleDrag = (e: React.DragEvent) => {
+  const handleDrag = (e: DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") {
@@ -37,7 +37,7 @@ export default function ImageAnalyzer({ onAnalyze, loading }: ImageAnalyzerProps
     return true;
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = (e: DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
@@ -45,17 +45,19 @@ export default function ImageAnalyzer({ onAnalyze, loading }: ImageAnalyzerProps
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const droppedFile = e.dataTransfer.files[0];
       if (validateFile(droppedFile)) {
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
         setFile(droppedFile);
         setPreviewUrl(URL.createObjectURL(droppedFile));
       }
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
       if (validateFile(selectedFile)) {
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
         setFile(selectedFile);
         setPreviewUrl(URL.createObjectURL(selectedFile));
       }
